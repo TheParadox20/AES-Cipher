@@ -1,9 +1,12 @@
+import numpy as np
+
 """ helpful
 "hello world".encode('ascii') -> array of ascii decimal(s)
 hex(int) -> hex string
 ''.join(map(bin,bytearray('\\','utf8'))) -> binary
 int('10101000101',2) -> binary to decimal
 int('f',16) -> hex to decimal
+^ -> bitwise XOR operator
 """
 class cryptoEngine:
     Sbox = [ #reading array item returns decimal representation
@@ -24,58 +27,82 @@ class cryptoEngine:
         [0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf], 
         [0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]
     ]
+    blockOrder=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
+    roundConstants=['01','02','04','08','10','20','40','80','1B','36'] #at least for 128 bit
+
 
     def __init__(self, key):
-        self.key = key
+        self.key = key[1]
+        self.encryption_level = key[0] #128 192 or 256 bit
 
 
-    def divide_into_blocks(message):
+    def divide_into_blocks(self,message):
         """
             divides text into 128bits (16 chars)
             in a 4x4 matrix
             if message is less than 16chars, append '\0'
         """
         #Make message divisible by 16
-        print('Initial message length:',len(message))
         if(len(message)%16!=0):
             for i in range(0,(16-len(message)%16)):
                 message+='\0'
         if(len(message)<16):
             for i in range(0,(16-len(message))):
                 message+='\0'
-        message=message.encode('ascii') #creates array of ascii decimal representations for each character
-        blocks=[]
+        message.encode('ascii') #creates array of ascii decimal representations for each character
+        #create blocks
+        blocks=[[],[],[],[]]
         cursor=0
-        print('FINAL message length:',len(message))
-        print(len(message)/16)
-        for i in range(0,int(len(message)/16)):
-            block=[]
-            for j in range(0,4):
-                row=[]
-                for k in range(0,4):
-                    row.append(message[cursor])
-                    cursor+=1
-                block.append(row)
-            blocks.append(block)
+        for j in range(0,4):
+            for k in range(0,4):
+                blocks[j].append(message[self.blockOrder[cursor]])
+                cursor+=1
         return blocks
         
-    def key_expansion():
-        pass
+    def key_expansion(self):
+        expandedKey = []
+        precursor_key=self.divide_into_blocks(self.key)
+        for i in range(0,10):# Create 10 keys
+            #rotate column
+            word=[]
+            for j in range (1,4):
+                word.append(precursor_key[j][len(precursor_key[0])-1])
+            word.append(precursor_key[0][len(precursor_key[0])-1])
+            #substitution
+            for i in range(0,len(word)):
+                word[i]=self.substitute(word[i])
+            #XOR round constant
+            #XOR corresponding keys
+            expandedKey.append('0')
+        return precursor_key
+
+    def XOR(a,b):
+        return a^b
     def add_round_key():
         pass
-    def substitute():
-        pass
+    def substitute(self,input):#input is a decimal
+        #convert to hex
+        input = hex(input)[:]
+        input = input if len(input)==2 else '0'+input
+        row = int(input[0],16)
+        col = int(input[1],16)
+        return int(self.Sbox[row][col],16)
+    
     def shift_rows():
         pass
     def mix_columns():
         pass
     def encrypt(self,message):
+        if self.encryption_level!=1:
+            print('Only 128 bit keys supported currently')
+            return
         cipher = ''
         print('Starting ENCRYPTION')
         if isFile(message):
             file = open(message, 'r')
             message = file.read()
-        print('Encrypting....\n',message)
+        print('Encrypting....\n',self.divide_into_blocks(message))
+        print('Keys: ',self.key_expansion())
         return cipher
             
     def decrypt(self,cipher):
