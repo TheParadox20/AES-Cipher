@@ -27,6 +27,13 @@ class cryptoEngine:
         [0xe1, 0xf8, 0x98, 0x11, 0x69, 0xd9, 0x8e, 0x94, 0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf], 
         [0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16]
     ]
+
+    mix_matrix=[
+        [],
+        [],
+        [],
+        []
+    ]
     blockOrder=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
     roundConstants=['01','02','04','08','10','20','40','80','1B','36'] #at least for 128 bit
 
@@ -122,8 +129,9 @@ class cryptoEngine:
         col = int(input[1],16)
         return self.Sbox[row][col]
     
-    def shift_rows():
-        pass
+    def shift_rows(array,padding=1):
+        return array[padding:]+array[:padding]
+    
     def mix_columns():
         pass
     def encrypt(self,message):
