@@ -1,21 +1,5 @@
-class cryptoEngine:
-    def __init__(self, key):
-        self.key = key
+from engine import cryptoEngine
 
-    def encrypt(self,message):
-        print('Starting ENCRYPTION')
-        if isFile(message):
-            file = open(message, 'r')
-            message = file.read()
-        print('Encrypting....\n',message)
-            
-    def decrypt(self,message):
-        print('Starting DECRYPTION')
-        if isFile(message):
-            file = open(message, 'r')
-            message = file.read()
-        print('Decrypting....\n',message)
-    
 def isFile(path): #check if file exists
     try:
         file = open(path,'r')
@@ -54,9 +38,10 @@ def main():
     message = input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
 
     engine = cryptoEngine(key)
+    print(engine.Sbox[0][0])
     if choice=='1':
-        engine.encrypt(message)
+        cipher = engine.encrypt(message)
     if choice=='2':
-        engine.decrypt(message)
+        text = engine.decrypt(message)
 
 main()
