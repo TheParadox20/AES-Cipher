@@ -1,5 +1,8 @@
 from engine import cryptoEngine
 
+
+debugging = 1
+
 def isFile(path): #check if file exists
     try:
         file = open(path,'r')
@@ -26,19 +29,18 @@ def isValidKey(key):
 
 
 def main():
-    choice = input('Welcome to the AES Cryptographic Engine. What will you be doing:\n\t1.) Encrypt text/file\n\t2.) Decrypt text/file\n')
+    choice = '1' if debugging else input('Welcome to the AES Cryptographic Engine. What will you be doing:\n\t1.) Encrypt text/file\n\t2.) Decrypt text/file\n')
     while 1:
-        keyInput = input('Enter key/path to key file\n')
+        keyInput = 'k.txt' if debugging else input('Enter key/path to key file\n')
         key = isValidKey(keyInput)
         if key[0]>0:
             break
         print('Invalid key, please try again:\n')
     print(key)
 
-    message = input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
+    message = 'test_cases/hello.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
 
     engine = cryptoEngine(key)
-    print(engine.Sbox[0][0])
     if choice=='1':
         cipher = engine.encrypt(message)
     if choice=='2':

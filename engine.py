@@ -42,14 +42,15 @@ class cryptoEngine:
             in a 4x4 matrix
             if message is less than 16chars, append '\0'
         """
-        #Make message divisible by 16
-        if(len(message)%16!=0):
-            for i in range(0,(16-len(message)%16)):
-                message+='\0'
-        if(len(message)<16):
-            for i in range(0,(16-len(message))):
-                message+='\0'
-        message.encode('ascii') #creates array of ascii decimal representations for each character
+        if type(message)!=list:
+            #Make message divisible by 16
+            if(len(message)%16!=0):
+                for i in range(0,(16-len(message)%16)):
+                    message+='\0'
+            if(len(message)<16):
+                for i in range(0,(16-len(message))):
+                    message+='\0'
+            message=message.encode('ascii') #creates array of ascii decimal representations for each character
         #create blocks
         blocks=[[],[],[],[]]
         cursor=0
@@ -60,33 +61,66 @@ class cryptoEngine:
         return blocks
         
     def key_expansion(self):
-        expandedKey = []
         precursor_key=self.divide_into_blocks(self.key)
-        for i in range(0,10):# Create 10 keys
+        expandedKey = [precursor_key]
+        for i in range(0,10):# Create 10 keys i == round number
+            new_block = []
             #rotate column
             word=[]
             for j in range (1,4):
-                word.append(precursor_key[j][len(precursor_key[0])-1])
-            word.append(precursor_key[0][len(precursor_key[0])-1])
+                word.append(precursor_key[j][3])
+            word.append(precursor_key[0][3])
             #substitution
-            for i in range(0,len(word)):
-                word[i]=self.substitute(word[i])
+            for k in range(0,len(word)):
+                word[k]=self.substitute(word[k])
             #XOR round constant
+            word[0]=self.XOR(word[0],int(self.roundConstants[i],16))
+            for l in range(1,4):
+                word[l] = self.XOR(word[l],00)
             #XOR corresponding keys
-            expandedKey.append('0')
-        return precursor_key
+            for m in range(0,len(word)):
+                word[m] = self.XOR(word[m],precursor_key[m][0])
+            #remaining words in key
+            new_block+=word
+            for n in range(1,4):#3 words remaining
+                for o in range(0,len(word)):
+                    word[o] = self.XOR(word[o],precursor_key[o][n])
+                new_block+=word
 
-    def XOR(a,b):
-        return a^b
+            new_block=self.divide_into_blocks(new_block)
+            expandedKey.append(new_block)
+            precursor_key=new_block
+        return expandedKey
+
+    def XOR(self,a,b):
+        """
+        Input(a,b):
+            Scenario 1: a=list and b = list; one dimensional array
+            Scenario 2: a=list and b = int
+            Scenario 3: a=int and b = int
+        """
+        if (type(a)==type(b)==list): #scenario 1
+            omega=[]
+            if (len(a)!=len(b)):
+                return
+            for i in range(0,len(a)):
+                omega.append(a[i]^b[i])
+            return omega
+        if (type(a)!=type(b)): #scenario 2
+            omega = []
+            for i in range(0,len(a)):
+                omega.append(a[i]^b)
+            return omega
+        return a^b #scenario 3
     def add_round_key():
         pass
     def substitute(self,input):#input is a decimal
-        #convert to hex
-        input = hex(input)[:]
+        #convert to hex string
+        input = hex(input)[2:]
         input = input if len(input)==2 else '0'+input
         row = int(input[0],16)
         col = int(input[1],16)
-        return int(self.Sbox[row][col],16)
+        return self.Sbox[row][col]
     
     def shift_rows():
         pass
@@ -102,7 +136,7 @@ class cryptoEngine:
             file = open(message, 'r')
             message = file.read()
         print('Encrypting....\n',self.divide_into_blocks(message))
-        print('Keys: ',self.key_expansion())
+        print('Keys length: ',len(self.key_expansion()))
         return cipher
             
     def decrypt(self,cipher):
