@@ -38,11 +38,18 @@ def main():
         print('Invalid key, please try again:\n')
     print(key)
 
-    message = 'test_cases/hello.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
+    message = 'test_cases/lorem.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
 
     engine = cryptoEngine(key)
     if choice=='1':
         cipher = engine.encrypt(message)
+        print(cipher)
+        save_to_file=input('\nSave result to file: Y/N:\n').lower()
+        if save_to_file=='y':
+            output = 'encrypted/'+input('Enter file name:\n')
+            file = open(output,'w')
+            file.write(cipher)
+            file.close()
     if choice=='2':
         text = engine.decrypt(message)
 

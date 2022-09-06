@@ -2,6 +2,7 @@ import numpy as np
 
 """ helpful
 "hello world".encode('ascii') -> array of ascii decimal(s)
+chr(<ascii decimal>) -> character
 hex(int) -> hex string
 ''.join(map(bin,bytearray('\\','utf8'))) -> binary
 int('10101000101',2) -> binary to decimal
@@ -29,10 +30,10 @@ class cryptoEngine:
     ]
 
     mix_matrix=[
-        [],
-        [],
-        [],
-        []
+        [2,3,1,1],
+        [1,2,3,1],
+        [1,1,2,3],
+        [3,1,1,2]
     ]
     blockOrder=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
     roundConstants=['01','02','04','08','10','20','40','80','1B','36'] #at least for 128 bit
@@ -49,26 +50,40 @@ class cryptoEngine:
             in a 4x4 matrix
             if message is less than 16chars, append '\0'
         """
-        if type(message)!=list:
-            #Make message divisible by 16
-            if(len(message)%16!=0):
-                for i in range(0,(16-len(message)%16)):
-                    message+='\0'
-            if(len(message)<16):
-                for i in range(0,(16-len(message))):
-                    message+='\0'
-            message=message.encode('ascii') #creates array of ascii decimal representations for each character
+        if type(message)==list:
+            blocks=[[],[],[],[]]
+            cursor=0
+            for j in range(0,4):
+                for k in range(0,4):
+                    blocks[j].append(message[self.blockOrder[cursor]])
+                    cursor+=1
+            return blocks
+        
+        #Make message divisible by 16
+        if(len(message)%16!=0):
+            for i in range(0,(16-len(message)%16)):
+                message+='\0'
+        if(len(message)<16):
+            for i in range(0,(16-len(message))):
+                message+='\0'
+        message=message.encode('ascii') #creates array of ascii decimal representations for each character
         #create blocks
-        blocks=[[],[],[],[]]
-        cursor=0
-        for j in range(0,4):
-            for k in range(0,4):
-                blocks[j].append(message[self.blockOrder[cursor]])
-                cursor+=1
+        blocks=[]
+        for i in range(0,len(message),16):
+            sub_message = message[i:i+16]
+            cursor=0
+            block=[[],[],[],[]]
+            for j in range(0,4):
+                for k in range(0,4):
+                    block[j].append(sub_message[self.blockOrder[cursor]])
+                    cursor+=1
+            blocks.append(block)
         return blocks
         
+    #def order_block(self,x):
+
     def key_expansion(self):
-        precursor_key=self.divide_into_blocks(self.key)
+        precursor_key=self.divide_into_blocks(self.key)[0]
         expandedKey = [precursor_key]
         for i in range(0,10):# Create 10 keys i == round number
             new_block = []
@@ -110,6 +125,14 @@ class cryptoEngine:
             omega=[]
             if (len(a)!=len(b)):
                 return
+            if type(a[0])==list: # scenario 1.2 => Multidimensional array
+                for i in range(0,len(a)):
+                    temp=[]
+                    for j in range(0,len(a[i])):
+                        temp.append(a[i][j]^b[i][j])
+                    omega.append(temp)
+                return omega
+            
             for i in range(0,len(a)):
                 omega.append(a[i]^b[i])
             return omega
@@ -119,8 +142,10 @@ class cryptoEngine:
                 omega.append(a[i]^b)
             return omega
         return a^b #scenario 3
-    def add_round_key():
-        pass
+    
+    def add_round_key(self,a,b):
+        return self.XOR(a,b)
+    
     def substitute(self,input):#input is a decimal
         #convert to hex string
         input = hex(input)[2:]
@@ -129,11 +154,25 @@ class cryptoEngine:
         col = int(input[1],16)
         return self.Sbox[row][col]
     
-    def shift_rows(array,padding=1):
+    def shift_rows(self,array,padding=1): #takes one dimensional array
         return array[padding:]+array[:padding]
     
-    def mix_columns():
-        pass
+    def mix_columns(self,matrix): # Takes 4x4 matrix and returns 4x4 matrix
+        #TODO:
+        return matrix
+    
+    def reconstruct(self,matrix): #Takes 4x4 matrix returns ascii char
+        block=''
+        #Flatten array
+        flat=[]
+        for i in range(0,len(matrix)):
+            for j in range(0,len(matrix[i])):
+                flat.append(matrix[j][i])
+        #Convert ascii decimal to ascii text
+        for i in flat:
+            block+=chr(i)
+        return block
+    
     def encrypt(self,message):
         if self.encryption_level!=1:
             print('Only 128 bit keys supported currently')
@@ -143,8 +182,22 @@ class cryptoEngine:
         if isFile(message):
             file = open(message, 'r')
             message = file.read()
-        print('Encrypting....\n',self.divide_into_blocks(message))
-        print('Keys length: ',len(self.key_expansion()))
+        
+        message_blocks = self.divide_into_blocks(message)
+        keys = self.key_expansion()
+        
+        for i in range(0,len(message_blocks)): # For each block
+            block = message_blocks[i]
+            for j in range(0,11): # Take each block through AES flow 10 times
+                #print('Block:',i+1,'Round:',j+1)
+                block = self.XOR(block,keys[j])
+                #Shift rows
+                for k in range(1,len(block)):
+                    block[k]=self.shift_rows(block[k],k)
+                #Shift columns
+                if i!=10: # Final round skip shifting columns
+                    block=self.mix_columns(block)
+            cipher+=self.reconstruct(block)
         return cipher
             
     def decrypt(self,cipher):
