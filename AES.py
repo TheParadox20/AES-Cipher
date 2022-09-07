@@ -38,25 +38,23 @@ def main():
         print('Invalid key, please try again:\n')
     print(key)
 
-    message = '/test_cases/lorem.txt' if choice=='1' else 'encrypted/lorem.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
+    message = 'test_cases/pic.png' if choice=='1' else 'encrypted/pic.png' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
 
     engine = cryptoEngine(key)
     if choice=='1':
         cipher = engine.encrypt(message)
         save_to_file=  'y' if  debugging else input('\nSave result to file: Y/N:\n').lower()
         if save_to_file=='y':
-            output = 'encrypted/lorem.txt' if debugging else 'encrypted/'+input('Enter file name:\n')
+            output = 'encrypted/pic.png' if debugging else 'encrypted/'+input('Enter file name:\n')
             file = open(output,'wb')
             file.write(cipher)
             file.close()
     if choice=='2':
-        text = engine.decrypt(message)
-        print('Original:',text)
         save_to_file=  'y' if  debugging else input('\nSave result to file: Y/N:\n').lower()
         if save_to_file=='y':
-            output = 'decrypted/lorem.txt' if debugging else 'encrypted/'+input('Enter file name:\n')
+            output = 'decrypted/pic.png' if debugging else 'encrypted/'+input('Enter file name:\n')
             file = open(output,'wb')
-            file.write(text)
+            file.write(engine.decrypt(message))
             file.close()
 
 main()
