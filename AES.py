@@ -29,7 +29,7 @@ def isValidKey(key):
 
 
 def main():
-    choice = '1' if debugging else input('Welcome to the AES Cryptographic Engine. What will you be doing:\n\t1.) Encrypt text/file\n\t2.) Decrypt text/file\n')
+    choice = '2' if debugging else input('Welcome to the AES Cryptographic Engine. What will you be doing:\n\t1.) Encrypt text/file\n\t2.) Decrypt text/file\n')
     while 1:
         keyInput = 'k.txt' if debugging else input('Enter key/path to key file\n')
         key = isValidKey(keyInput)
@@ -38,19 +38,25 @@ def main():
         print('Invalid key, please try again:\n')
     print(key)
 
-    message = 'test_cases/lorem.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
+    message = '/test_cases/lorem.txt' if choice=='1' else 'encrypted/lorem.txt' if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n")
 
     engine = cryptoEngine(key)
     if choice=='1':
         cipher = engine.encrypt(message)
-        print(cipher)
-        save_to_file=input('\nSave result to file: Y/N:\n').lower()
+        save_to_file=  'y' if  debugging else input('\nSave result to file: Y/N:\n').lower()
         if save_to_file=='y':
-            output = 'encrypted/'+input('Enter file name:\n')
-            file = open(output,'w')
+            output = 'encrypted/lorem.txt' if debugging else 'encrypted/'+input('Enter file name:\n')
+            file = open(output,'wb')
             file.write(cipher)
             file.close()
     if choice=='2':
         text = engine.decrypt(message)
+        print('Original:',text)
+        save_to_file=  'y' if  debugging else input('\nSave result to file: Y/N:\n').lower()
+        if save_to_file=='y':
+            output = 'decrypted/lorem.txt' if debugging else 'encrypted/'+input('Enter file name:\n')
+            file = open(output,'wb')
+            file.write(text)
+            file.close()
 
 main()

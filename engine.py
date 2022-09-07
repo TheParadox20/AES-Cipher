@@ -8,6 +8,7 @@ hex(int) -> hex string
 int('10101000101',2) -> binary to decimal
 int('f',16) -> hex to decimal
 ^ -> bitwise XOR operator
+bin(n).replace("0b", "") -> binary from int
 """
 class cryptoEngine:
     Sbox = [ #reading array item returns decimal representation
@@ -62,11 +63,10 @@ class cryptoEngine:
         #Make message divisible by 16
         if(len(message)%16!=0):
             for i in range(0,(16-len(message)%16)):
-                message+='\0'
+                message+=b'\0'
         if(len(message)<16):
             for i in range(0,(16-len(message))):
-                message+='\0'
-        message=message.encode('ascii') #creates array of ascii decimal representations for each character
+                message+=b'\0'
         #create blocks
         blocks=[]
         for i in range(0,len(message),16):
@@ -83,7 +83,7 @@ class cryptoEngine:
     #def order_block(self,x):
 
     def key_expansion(self):
-        precursor_key=self.divide_into_blocks(self.key)[0]
+        precursor_key=self.divide_into_blocks(self.key.encode('ascii'))[0]
         expandedKey = [precursor_key]
         for i in range(0,10):# Create 10 keys i == round number
             new_block = []
@@ -161,35 +161,40 @@ class cryptoEngine:
         #TODO:
         return matrix
     
-    def reconstruct(self,matrix): #Takes 4x4 matrix returns ascii char
-        block=''
+    def reconstruct(self,matrix): #Takes 4x4 matrix returns 16 bytes
+        block=b''
         #Flatten array
         flat=[]
         for i in range(0,len(matrix)):
             for j in range(0,len(matrix[i])):
                 flat.append(matrix[j][i])
-        #Convert ascii decimal to ascii text
+        #Convert decimal to hex then to bytes
         for i in flat:
-            block+=chr(i)
+            hexd=hex(i)[2:]
+            if len(hexd)==1:
+                hexd='0'+hexd
+            block+=bytes.fromhex(hexd)
         return block
     
     def encrypt(self,message):
         if self.encryption_level!=1:
             print('Only 128 bit keys supported currently')
             return
-        cipher = ''
+        cipher = b''
         print('Starting ENCRYPTION')
         if isFile(message):
-            file = open(message, 'r')
+            file = open(message, 'rb')
             message = file.read()
-        
+        else:
+            message=message.encode() #creates byte array
         message_blocks = self.divide_into_blocks(message)
+        print(message_blocks)
         keys = self.key_expansion()
         
         for i in range(0,len(message_blocks)): # For each block
             block = message_blocks[i]
             for j in range(0,11): # Take each block through AES flow 10 times
-                #print('Block:',i+1,'Round:',j+1)
+                # Add round key
                 block = self.XOR(block,keys[j])
                 #Shift rows
                 for k in range(1,len(block)):
@@ -201,12 +206,35 @@ class cryptoEngine:
         return cipher
             
     def decrypt(self,cipher):
-        text='text'
+        text=b''
         print('Starting DECRYPTION')
         if isFile(cipher):
-            file = open(cipher, 'r')
+            file = open(cipher, 'rb')
             cipher = file.read()
-        print('Decrypting....\n',cipher)
+        else:
+            cipher=cipher.encode()
+        
+        message_blocks = self.divide_into_blocks(cipher)
+        keys = self.key_expansion()
+
+        for i in range(0,len(message_blocks)): # For each block
+            block = message_blocks[i]
+            for j in range(0,11): # Take each block through AES flow 10 times
+                #Shift columns
+                if i!=0: # First round skip shifting columns
+                    block=self.mix_columns(block)
+                #Shift rows
+                inverter=1
+                for k in range(len(block)-1,0,-1):
+                    print('Block before shift:',block[k])
+                    block[k]=self.shift_rows(block[k],inverter)
+                    print('Block after shift:',block[k])
+                    inverter+=1
+                # Add round key
+                block = self.XOR(block,keys[j])
+            text+=self.reconstruct(block)
+        
+        print(self.divide_into_blocks(text))
         return text
 
 def isFile(path): #check if file exists
