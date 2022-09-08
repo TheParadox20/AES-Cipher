@@ -186,7 +186,8 @@ class cryptoEngine:
         else:
             message=message.encode() #creates byte array
         message_blocks = self.divide_into_blocks(message)
-        # print(message_blocks)
+        print(message_blocks)
+        
         keys = self.key_expansion()
         
         for i in range(0,len(message_blocks)): # For each block
@@ -195,8 +196,8 @@ class cryptoEngine:
                 # Add round key
                 block = self.XOR(block,keys[j])
                 #Shift rows
-                # for k in range(1,len(block)):
-                #     block[k]=self.shift_rows(block[k],k)
+                for k in range(1,len(block)):
+                    block[k]=self.shift_rows(block[k],k)
                 #Shift columns
                 if i!=10: # Final round skip shifting columns
                     block=self.mix_columns(block)
@@ -221,14 +222,16 @@ class cryptoEngine:
                 #Shift columns
                 if i!=0: # First round skip shifting columns
                     block=self.mix_columns(block)
-                #Shift rows
-                inverter=1
-                # for k in range(len(block)-1,0,-1):
-                #     block[k]=self.shift_rows(block[k],inverter)
+                
+                #Invert Shift rows
+                for k in range(1,len(block)):
+                    block[k]=self.shift_rows(block[k],4-k)
+                
                 # Add round key
-                block = self.XOR(block,keys[j])
+                block = self.XOR(block,keys[10-j])
             text+=self.reconstruct(block)
         
+        print(self.divide_into_blocks(text))
         return text
 
 def isFile(path): #check if file exists
