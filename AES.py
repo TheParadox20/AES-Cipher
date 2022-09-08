@@ -1,7 +1,7 @@
 from engine import cryptoEngine
 
 
-debugging = 1
+debugging = 0
 
 def isFile(path): #check if file exists
     try:
@@ -50,13 +50,13 @@ def main():
             file.write(cipher)
             file.close()
     if choice=='2':
-        message=engine.decrypt(message)
-        print(message)
         save_to_file=  'y' if  debugging else input('\nSave result to file: Y/N:\n').lower()
         if save_to_file=='y':
             output = 'decrypted/lorem.txt' if debugging else 'decrypted/'+input('Enter file name:\n')
             file = open(output,'wb')
-            file.write(message)
+            file.write(engine.decrypt(message))
             file.close()
+        else:
+            print(engine.decrypt(message))
 
 main()
