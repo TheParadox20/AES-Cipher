@@ -36,3 +36,15 @@ def test_reconstruction():
 
 def test_revert_xor():
     pass
+
+def test_substitution():
+    assert 99==engine.substitute(0)
+    assert 202==engine.substitute(16)
+    assert 161==engine.substitute(241)
+
+def test_revert_substitution():
+    input=16
+    sub = engine.substitute(16)
+    assert input==engine.unsubstitute(sub)
+
+test_revert_substitution()

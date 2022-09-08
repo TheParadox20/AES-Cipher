@@ -144,14 +144,28 @@ class cryptoEngine:
     def add_round_key(self,a,b):
         return self.XOR(a,b)
     
-    def substitute(self,input):#input is a decimal
+    def substitute(self,input):#input is a decimal output decimal
         #convert to hex string
         input = hex(input)[2:]
-        input = input if len(input)==2 else '0'+input
+        if len(input)==1:
+            input='0'+input
         row = int(input[0],16)
         col = int(input[1],16)
         return self.Sbox[row][col]
     
+    def unsubstitute(self,input): #given a decimal find location of row and column in sbox and convert to decimal
+        for i in range(0,len(self.Sbox)):
+            if input in self.Sbox[i]:
+                row=i
+                break
+        col = self.Sbox[row].index(input)
+        #Create hex string from row and column
+        row=hex(row)[2:]
+        col=hex(col)[2:]
+        output = row+col
+        return int(output,16)
+
+
     def shift_rows(self,array,padding=1): #takes one dimensional array
         return array[padding:]+array[:padding]
     
@@ -186,7 +200,6 @@ class cryptoEngine:
         else:
             message=message.encode() #creates byte array
         message_blocks = self.divide_into_blocks(message)
-        print(message_blocks)
         
         keys = self.key_expansion()
         
@@ -195,6 +208,10 @@ class cryptoEngine:
             for j in range(0,11): # Take each block through AES flow 10 times
                 # Add round key
                 block = self.XOR(block,keys[j])
+                # Substitute
+                for x in range(0,len(block)):
+                    for y in range(0,len(block[x])):
+                        block[x][y]=self.substitute(block[x][y])
                 #Shift rows
                 for k in range(1,len(block)):
                     block[k]=self.shift_rows(block[k],k)
@@ -227,11 +244,15 @@ class cryptoEngine:
                 for k in range(1,len(block)):
                     block[k]=self.shift_rows(block[k],4-k)
                 
+                # Un Substitute
+                for x in range(0,len(block)):
+                    for y in range(0,len(block[x])):
+                        block[x][y]=self.unsubstitute(block[x][y])
+
                 # Add round key
                 block = self.XOR(block,keys[10-j])
             text+=self.reconstruct(block)
         
-        print(self.divide_into_blocks(text))
         return text
 
 def isFile(path): #check if file exists
