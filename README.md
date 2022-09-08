@@ -9,3 +9,6 @@ None
 
 ## Entry Point
 Python file <a href="./AES.py">`AES.py`</a>
+
+## Sample Usecase
+<img src="markdown/use-case.png">

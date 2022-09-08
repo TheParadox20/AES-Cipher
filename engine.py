@@ -173,10 +173,12 @@ class cryptoEngine:
             a='0'+a
         for i in range(0,8-len(b)):
             b='0'+b
-        print(a,'\n',b)
+        return
     
     def mix_columns(self,matrix,direction=1): # Takes 4x4 matrix and returns 4x4 matrix
         state = [[],[],[],[]]
+        multiplied=[]
+        xor=0
         if direction:
             operand=self.mix_matrix
         else: #reverse matrix
@@ -184,6 +186,9 @@ class cryptoEngine:
         for i in range(0,len(operand)):
             for j in range(0,len(operand)):
                 pass
+            #XOR each
+            for x in multiplied:
+                xor=xor^x
         
         return matrix
     

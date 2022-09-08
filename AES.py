@@ -38,7 +38,7 @@ def main():
         print('Invalid key, please try again:\n')
     print(key)
 
-    message = (('/test_cases/lorem.txt' if choice=='1' else 'encrypted/lorem.txt') if debugging else input(f"Enter text/path tofile to {'encrypt'if choice=='1' else 'decrypt'}\n"))
+    message = (('/test_cases/lorem.txt' if choice=='1' else 'encrypted/lorem.txt') if debugging else input(f"Enter text/path to file to {'encrypt'if choice=='1' else 'decrypt'}\n"))
 
     engine = cryptoEngine(key)
     if choice=='1':
