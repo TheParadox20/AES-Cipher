@@ -1,13 +1,3 @@
-""" helpful
-"hello world".encode('ascii') -> array of ascii decimal(s)
-chr(<ascii decimal>) -> character
-hex(int) -> hex string
-''.join(map(bin,bytearray('\\','utf8'))) -> binary
-int('10101000101',2) -> binary to decimal
-int('f',16) -> hex to decimal
-^ -> bitwise XOR operator
-bin(n).replace("0b", "") -> binary from int
-"""
 class cryptoEngine:
     Sbox = [ #reading array item returns decimal representation
         [0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76], 
@@ -33,6 +23,12 @@ class cryptoEngine:
         [0x1,0x2,0x3,0x1],
         [0x1,0x1,0x2,0x3],
         [0x3,0x1,0x1,0x2]
+    ]
+    unmix_matrix=[
+        [0x0e,0x0b,0x0d,0x09],
+        [0x09,0x0e,0x0b,0x0d],
+        [0x0d,0x09,0x0e,0x0b],
+        [0x0b,0x0d,0x09,0x0e]
     ]
     blockOrder=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
     roundConstants=['01','02','04','08','10','20','40','80','1B','36'] #at least for 128 bit
@@ -169,8 +165,28 @@ class cryptoEngine:
     def shift_rows(self,array,padding=1): #takes one dimensional array
         return array[padding:]+array[:padding]
     
-    def mix_columns(self,matrix): # Takes 4x4 matrix and returns 4x4 matrix
+    def multiply(self,a,b): #takes in 2 decimals returns 1 decimal
+        #Create 8 bits from int
+        a=bin(a).replace("0b", "")
+        b=bin(b).replace("0b", "")
+        for i in range(0,8-len(a)):
+            a='0'+a
+        for i in range(0,8-len(b)):
+            b='0'+b
+        print(a,'\n',b)
+    
+    def mix_columns(self,matrix,direction=1): # Takes 4x4 matrix and returns 4x4 matrix
+        state = [[],[],[],[]]
+        if direction:
+            operand=self.mix_matrix
+        else: #reverse matrix
+            operand=self.unmix_matrix
+        for i in range(0,len(operand)):
+            for j in range(0,len(operand)):
+                pass
+        
         return matrix
+    
     
     def reconstruct(self,matrix): #Takes 4x4 matrix returns 16 bytes
         block=b''
@@ -236,8 +252,8 @@ class cryptoEngine:
             block = message_blocks[i]
             for j in range(0,11): # Take each block through AES flow 10 times
                 #Shift columns
-                if i!=0: # First round skip shifting columns
-                    block=self.mix_columns(block)
+                if i!=0: # First round skip columns mix
+                    block=self.mix_columns(block,-1)
                 
                 #Invert Shift rows
                 for k in range(1,len(block)):

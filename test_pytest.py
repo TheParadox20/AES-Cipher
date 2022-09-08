@@ -47,4 +47,9 @@ def test_revert_substitution():
     sub = engine.substitute(16)
     assert input==engine.unsubstitute(sub)
 
-test_revert_substitution()
+def test_multiplication():
+    assert 21 == engine.multiply(0x02,0x87)
+    assert 70 == engine.multiply(0x01,0x46)
+    assert 178 == engine.multiply(0x03,0x6e)
+
+engine.multiply(0x02,0x87)
