@@ -29,10 +29,10 @@ class cryptoEngine:
     ]
 
     mix_matrix=[
-        [2,3,1,1],
-        [1,2,3,1],
-        [1,1,2,3],
-        [3,1,1,2]
+        [0x2,0x3,0x1,0x1],
+        [0x1,0x2,0x3,0x1],
+        [0x1,0x1,0x2,0x3],
+        [0x3,0x1,0x1,0x2]
     ]
     blockOrder=[0,4,8,12,1,5,9,13,2,6,10,14,3,7,11,15]
     roundConstants=['01','02','04','08','10','20','40','80','1B','36'] #at least for 128 bit
@@ -170,7 +170,6 @@ class cryptoEngine:
         return array[padding:]+array[:padding]
     
     def mix_columns(self,matrix): # Takes 4x4 matrix and returns 4x4 matrix
-        #TODO:
         return matrix
     
     def reconstruct(self,matrix): #Takes 4x4 matrix returns 16 bytes
