@@ -19,6 +19,9 @@ def isValidKey(key):
         file = open(key, 'r')
         key = file.read()
 
+    if len(key)<16:
+        key = key + '0'*(16-len(key))
+        return 1, key
     if len(key)==16:
         return 1, key
     elif len(key)==24:
